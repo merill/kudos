@@ -130,6 +130,7 @@
       title: '',
       source: '',
       sourceLabel: '',
+      avatar: '',
       avatarDataUrl: '',
     };
   }
@@ -145,6 +146,7 @@
           title: item.title || '',
           source: item.source || '',
           sourceLabel: item.sourceLabel || '',
+          avatar: item.avatar || '',
           avatarDataUrl: '',
         }
       : blankKudo();
@@ -285,8 +287,16 @@
             </label>
           </div>
           <label class="upload-field">
-            <ImagePlus size={18} />
-            <span>{form.avatarDataUrl ? 'Avatar ready' : 'Upload avatar image'}</span>
+            {#if form.avatarDataUrl}
+              <img class="avatar-preview" src={form.avatarDataUrl} alt="New avatar preview" />
+              <span>New avatar ready — click to choose a different one</span>
+            {:else if form.avatar}
+              <img class="avatar-preview" src={form.avatar} alt="Current avatar" />
+              <span>Current avatar — click to replace (optional)</span>
+            {:else}
+              <ImagePlus size={18} />
+              <span>Upload avatar image (optional)</span>
+            {/if}
             <input accept="image/*" type="file" on:change={readAvatar} />
           </label>
           <button class="icon-button primary" disabled={!user || busy} type="submit">
