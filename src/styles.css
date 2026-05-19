@@ -152,41 +152,6 @@ h2 {
     box-shadow 320ms ease,
     border-color 320ms ease;
   will-change: transform, opacity;
-  overflow: hidden;
-}
-
-/* Pending state: card is visible as a shimmering placeholder until inView fires. */
-.kudo-card.is-pending {
-  opacity: 1;
-  transform: none;
-  background: #f1ece2;
-  border-color: rgba(23, 22, 21, 0.06);
-  box-shadow: 0 12px 30px rgba(63, 54, 41, 0.05);
-}
-
-.kudo-card.is-pending > * {
-  /* opacity (not visibility) so the text remains searchable via Ctrl/Cmd+F */
-  opacity: 0;
-}
-
-.kudo-card.is-pending::after {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    100deg,
-    rgba(255, 255, 255, 0) 30%,
-    rgba(255, 255, 255, 0.6) 50%,
-    rgba(255, 255, 255, 0) 70%
-  );
-  content: "";
-  transform: translateX(-100%);
-  animation: kudo-shimmer 1.6s ease-in-out infinite;
-}
-
-@keyframes kudo-shimmer {
-  to {
-    transform: translateX(100%);
-  }
 }
 
 .kudo-card.linked {

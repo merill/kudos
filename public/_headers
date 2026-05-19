@@ -1,0 +1,27 @@
+# Cache rules for Cloudflare Pages.
+# Reference: https://developers.cloudflare.com/pages/configuration/headers/
+
+# Vite emits content-hashed filenames in /assets/* (e.g. index-abc123.js).
+# Safe to cache forever and treat as immutable.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Avatar images rarely change. Long cache, but allow revalidation.
+/avatars/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+# Hero portrait and favicon: a week, revalidated daily.
+/merill.jpg
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+/favicon.ico
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+# HTML and everything else: no long browser cache, but let the CF edge serve
+# from cache while revalidating in the background. Keeps deploys fast to
+# propagate while still benefiting from edge caching.
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Permissions-Policy: camera=(), microphone=(), geolocation=()

@@ -76,21 +76,15 @@
     if (reduced) {
       // Show everything immediately for reduced-motion users.
       cards.forEach((el) => {
-        el.classList.remove('is-pending');
         el.style.opacity = '1';
         el.style.transform = 'none';
       });
       return {};
     }
 
-    // Mark every card as a shimmering placeholder up front so cards below
-    // the fold shimmer until they scroll into view.
-    cards.forEach((el) => el.classList.add('is-pending'));
-
     const stop = inView(
       cards,
       (element) => {
-        element.classList.remove('is-pending');
         animate(
           element,
           { opacity: [0, 1], y: [18, 0] },
