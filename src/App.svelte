@@ -1,68 +1,114 @@
 <script>
   import { Github, ImagePlus, LogIn, Plus, Save, ShieldCheck } from 'lucide-svelte';
+  import { animate, frame, inView } from 'motion';
   import kudos from './lib/kudos.json';
   import { silhouetteFor } from './lib/silhouettes.js';
 
   const postUrl =
     'https://www.linkedin.com/posts/merill_hey-folks-some-personal-news-im-leaving-activity-7460694824514404352-bUWv/';
 
-  // Subtle pointer-tracked tilt. Max ~5deg, eases back on leave.
-  // Respects prefers-reduced-motion and skips coarse pointers (touch).
+  // Pointer-tracked tilt — adapted from Motion's official "Tilt card" example:
+  // https://examples.motion.dev/js/tilt-card
+  // Same structure (frame.postRender + Motion's default spring), tuned gentler
+  // for content cards. Skipped for reduced-motion and coarse (touch) pointers.
   function tilt(node) {
     if (typeof window === 'undefined') return {};
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const coarse = window.matchMedia('(pointer: coarse)').matches;
     if (reduced || coarse) return {};
 
-    const MAX_TILT = 2.2; // degrees
-    const LIFT = 2; // px translateZ-equivalent lift
-    let frame = 0;
-    let active = false;
+    const maxTilt = 7;
+    const state = { z: 0, rotateX: 0, rotateY: 0 };
 
-    const setVars = (rx, ry, lift) => {
-      node.style.setProperty('--tilt-x', `${rx}deg`);
-      node.style.setProperty('--tilt-y', `${ry}deg`);
-      node.style.setProperty('--tilt-lift', `${lift}px`);
-    };
-
-    const onMove = (event) => {
+    const calculateTilt = (event) => {
       const rect = node.getBoundingClientRect();
-      const px = (event.clientX - rect.left) / rect.width; // 0..1
-      const py = (event.clientY - rect.top) / rect.height; // 0..1
-      const ry = (px - 0.5) * 2 * MAX_TILT; // left/right -> rotateY
-      const rx = (0.5 - py) * 2 * MAX_TILT; // up/down  -> rotateX
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => setVars(rx, ry, LIFT));
+      state.z = -8;
+      const xPercent = (event.clientX - rect.left) / rect.width;
+      const yPercent = (event.clientY - rect.top) / rect.height;
+      state.rotateX = maxTilt * (0.5 - yPercent);
+      state.rotateY = maxTilt * (xPercent - 0.5);
     };
 
-    const onEnter = () => {
-      active = true;
-      node.classList.add('is-tilting');
+    const animateToTilt = () => {
+      animate(node, {
+        transformPerspective: 600,
+        rotateX: state.rotateX,
+        rotateY: state.rotateY,
+        z: state.z,
+      });
+    };
+
+    const updateTilt = (e) => {
+      calculateTilt(e);
+      frame.postRender(animateToTilt);
     };
 
     const onLeave = () => {
-      active = false;
-      cancelAnimationFrame(frame);
-      node.classList.remove('is-tilting');
-      setVars(0, 0, 0);
+      state.z = 0;
+      state.rotateX = 0;
+      state.rotateY = 0;
+      frame.postRender(animateToTilt);
     };
 
-    node.addEventListener('pointerenter', onEnter);
-    node.addEventListener('pointermove', onMove);
+    node.addEventListener('pointerenter', updateTilt);
+    node.addEventListener('pointermove', updateTilt);
     node.addEventListener('pointerleave', onLeave);
 
     return {
       destroy() {
-        cancelAnimationFrame(frame);
-        node.removeEventListener('pointerenter', onEnter);
-        node.removeEventListener('pointermove', onMove);
+        node.removeEventListener('pointerenter', updateTilt);
+        node.removeEventListener('pointermove', updateTilt);
         node.removeEventListener('pointerleave', onLeave);
-        if (active) onLeave();
       },
     };
   }
 
   let isAdmin = window.location.pathname.replace(/\/$/, '') === '/admin';
+
+  // Fade + lift cards into view as they enter the viewport.
+  // Based on Motion's inView pattern: https://motion.dev/docs/inview
+  function revealOnScroll(node) {
+    if (typeof window === 'undefined') return {};
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const cards = node.querySelectorAll('.kudo-card');
+
+    if (reduced) {
+      // Show everything immediately for reduced-motion users.
+      cards.forEach((el) => {
+        el.classList.remove('is-pending');
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+      });
+      return {};
+    }
+
+    // Mark every card as a shimmering placeholder up front so cards below
+    // the fold shimmer until they scroll into view.
+    cards.forEach((el) => el.classList.add('is-pending'));
+
+    const stop = inView(
+      cards,
+      (element) => {
+        element.classList.remove('is-pending');
+        animate(
+          element,
+          { opacity: [0, 1], y: [18, 0] },
+          { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+        );
+      },
+      // Fire as soon as any part of the card enters the viewport. This keeps
+      // browser find-in-page working: when Ctrl/Cmd+F scrolls to a match,
+      // the card reveals immediately at whichever edge it appears.
+      { amount: 'some' },
+    );
+
+    return {
+      destroy() {
+        stop();
+      },
+    };
+  }
 
   // Fisher–Yates shuffle so the wall feels fresh on every visit.
   // The admin view keeps the original order so entries are easy to find.
@@ -285,7 +331,7 @@
         <span>{kudos.length} notes</span>
       </div>
 
-      <div class="kudos-grid">
+      <div class="kudos-grid" use:revealOnScroll>
         {#each displayKudos as item}
           <svelte:element
             this={item.source ? 'a' : 'article'}

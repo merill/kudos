@@ -129,13 +129,9 @@ h2 {
 .kudos-grid {
   column-count: 3;
   column-gap: 18px;
-  perspective: 1800px;
 }
 
 .kudo-card {
-  --tilt-x: 0deg;
-  --tilt-y: 0deg;
-  --tilt-lift: 0px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -149,28 +145,52 @@ h2 {
   padding: 24px;
   text-decoration: none;
   color: inherit;
-  transform:
-    rotateX(var(--tilt-x))
-    rotateY(var(--tilt-y))
-    translate3d(0, calc(var(--tilt-lift) * -1), 0);
+  opacity: 0;
+  transform: translateY(18px);
   transform-style: preserve-3d;
   transition:
-    transform 420ms cubic-bezier(0.2, 0.8, 0.2, 1),
     box-shadow 320ms ease,
     border-color 320ms ease;
-  will-change: transform;
+  will-change: transform, opacity;
+  overflow: hidden;
+}
+
+/* Pending state: card is visible as a shimmering placeholder until inView fires. */
+.kudo-card.is-pending {
+  opacity: 1;
+  transform: none;
+  background: #f1ece2;
+  border-color: rgba(23, 22, 21, 0.06);
+  box-shadow: 0 12px 30px rgba(63, 54, 41, 0.05);
+}
+
+.kudo-card.is-pending > * {
+  /* opacity (not visibility) so the text remains searchable via Ctrl/Cmd+F */
+  opacity: 0;
+}
+
+.kudo-card.is-pending::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0) 30%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  content: "";
+  transform: translateX(-100%);
+  animation: kudo-shimmer 1.6s ease-in-out infinite;
+}
+
+@keyframes kudo-shimmer {
+  to {
+    transform: translateX(100%);
+  }
 }
 
 .kudo-card.linked {
   cursor: pointer;
-}
-
-/* While actively tracking the pointer, follow it instantly. */
-.kudo-card.is-tilting {
-  transition:
-    transform 90ms linear,
-    box-shadow 320ms ease,
-    border-color 320ms ease;
 }
 
 .kudo-card.linked:hover,
@@ -182,7 +202,6 @@ h2 {
 
 @media (prefers-reduced-motion: reduce) {
   .kudo-card {
-    transform: none;
     transition: box-shadow 200ms ease, border-color 200ms ease;
   }
 }
