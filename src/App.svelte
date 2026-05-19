@@ -304,15 +304,18 @@
         <p class="eyebrow">Kudos Wall</p>
         <h1>Kudos Wall</h1>
         <p class="note">
-          I’m Merill Fernando. I’m humbled that so many people believe in me, and
-          I never want to let them down. I keep these kind notes here as a small
-          reminder to stay motivated, and I thank everyone who has given me the
-          privilege of helping them along the way.
+          👋 Hi folks, I’m <a class="name-link" href="https://merill.net" rel="me">Merill Fernando</a>.
+          I’m grateful and humbled that so many people believe in me, and I never
+          want to let them down. I come back to these words whenever I need a lift
+          — they inspire me, push me forward, and help me keep building toward the
+          dreams I have. Thank you to everyone who has given me the privilege of
+          helping them along the way.
         </p>
       </div>
       <figure class="hero-portrait">
-        <img src="/merill.jpg" alt="Merill Fernando" width="220" height="220" />
-        <figcaption>Merill Fernando</figcaption>
+        <a class="portrait-link" href="https://merill.net" aria-label="merill.net">
+          <img src="/merill.jpg" alt="Merill Fernando" width="220" height="220" />
+        </a>
       </figure>
     </section>
 
