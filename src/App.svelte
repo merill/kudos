@@ -212,8 +212,16 @@
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(form),
       });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'Save failed');
+      const text = await response.text();
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch {
+        throw new Error(
+          `Server returned ${response.status} with non-JSON body: ${text.slice(0, 200)}`,
+        );
+      }
+      if (!response.ok) throw new Error(result.error || `Save failed (${response.status})`);
       status = `Saved. Commit ${result.commitSha.slice(0, 7)} will rebuild the site.`;
       if (!form.id) form.id = result.id;
     } catch (error) {
