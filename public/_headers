@@ -16,6 +16,11 @@
 /favicon.ico
   Cache-Control: public, max-age=604800, stale-while-revalidate=86400
 
+# OpenGraph card: long-cache; rename to og-image-v2.png etc. to bust social
+# platform caches when the design changes.
+/og-image.png
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
 # HTML and everything else: no long browser cache, but let the CF edge serve
 # from cache while revalidating in the background. Keeps deploys fast to
 # propagate while still benefiting from edge caching.
